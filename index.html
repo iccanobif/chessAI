@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf8">
+    <title>scacchi</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
+    <script src="js/chessboard-0.3.0.js"></script>
+    <link rel="stylesheet" href="css/chessboard-0.3.0.css" />
+</head>
+
+<body>
+    <div id="board" style="width: 400px"></div>
+    <div id="storia"></div>
+    <script>
+
+        // do not pick up pieces if the game is over
+        // only pick up pieces for White
+        const onDragStart = function (source, piece, position, orientation)
+        {
+            if (chess.in_checkmate() === true || chess.in_draw() === true ||
+                piece.search(/^b/) !== -1)
+            {
+                return false;
+            }
+        };
+
+        const makeRandomMove = function ()
+        {
+            var possibleMoves = chess.moves();
+
+            // game over
+            if (possibleMoves.length === 0) return;
+
+            var randomIndex = Math.floor(Math.random() * possibleMoves.length);
+            chess.move(possibleMoves[randomIndex]);
+            board.position(chess.fen());
+        };
+
+        const onDrop = function (source, target)
+        {
+            // see if the move is legal
+            var move = chess.move({
+                from: source,
+                to: target,
+                promotion: 'q' // NOTE: always promote to a queen for example simplicity
+            });
+
+            // illegal move
+            if (move === null) return 'snapback';
+
+            // make random legal move for black
+            window.setTimeout(makeRandomMove, 250);
+        };
+
+        // update the board position after the piece snap
+        // for castling, en passant, pawn promotion
+        const onSnapEnd = function ()
+        {
+            board.position(chess.fen());
+        };
+
+        const cfg = {
+            draggable: true,
+            position: 'start',
+            onDragStart: onDragStart,
+            onDrop: onDrop,
+            onSnapEnd: onSnapEnd
+        };
+        const board = ChessBoard('board', cfg);
+
+        const chess = new Chess();
+
+        // while (!chess.game_over())
+        // {
+        //     var moves = chess.moves();
+        //     var move = moves[Math.floor(Math.random() * moves.length)];
+        //     chess.move(move);
+        // }
+        // board.position(chess.fen());
+        // $("#storia").html(chess.pgn())
+    </script>
+</body>
+
+</html>
