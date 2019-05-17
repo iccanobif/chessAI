@@ -15,33 +15,36 @@
     <div id="storia"></div>
     <script>
 
+        // https://en.wikipedia.org/wiki/List_of_chess_openings
+
         // do not pick up pieces if the game is over
         // only pick up pieces for White
-        const onDragStart = function (source, piece, position, orientation)
+        function canHumanMove(source, piece, position, orientation)
         {
-            if (chess.in_checkmate() === true || chess.in_draw() === true ||
-                piece.search(/^b/) !== -1)
+            if (chess.in_checkmate()
+                || chess.in_draw()
+                || piece.search(/^b/) !== -1)
             {
                 return false;
             }
         };
 
-        const makeRandomMove = function ()
+        function makeRandomMove()
         {
-            var possibleMoves = chess.moves();
+            const possibleMoves = chess.moves();
 
             // game over
             if (possibleMoves.length === 0) return;
 
-            var randomIndex = Math.floor(Math.random() * possibleMoves.length);
+            const randomIndex = Math.floor(Math.random() * possibleMoves.length);
             chess.move(possibleMoves[randomIndex]);
             board.position(chess.fen());
         };
 
-        const onDrop = function (source, target)
+        function applyHumanMove(source, target)
         {
             // see if the move is legal
-            var move = chess.move({
+            const move = chess.move({
                 from: source,
                 to: target,
                 promotion: 'q' // NOTE: always promote to a queen for example simplicity
@@ -51,12 +54,12 @@
             if (move === null) return 'snapback';
 
             // make random legal move for black
-            window.setTimeout(makeRandomMove, 250);
+            window.setTimeout(makeRandomMove, 0);
         };
 
         // update the board position after the piece snap
         // for castling, en passant, pawn promotion
-        const onSnapEnd = function ()
+        function updateBoard()
         {
             board.position(chess.fen());
         };
@@ -64,9 +67,9 @@
         const cfg = {
             draggable: true,
             position: 'start',
-            onDragStart: onDragStart,
-            onDrop: onDrop,
-            onSnapEnd: onSnapEnd
+            onDragStart: canHumanMove,
+            onDrop: applyHumanMove,
+            onSnapEnd: updateBoard
         };
         const board = ChessBoard('board', cfg);
 
